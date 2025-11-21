@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinte Mil Léguas Sinitras</title>
+    <link rel="icon" href="pfp.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            color: #fff;
+            overflow-x: hidden;
+            background-color: #000;
+            cursor: default;
+        }
+
+        .ocean-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .depth-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(to bottom, 
+                    #87CEEB 0%, 
+                    #4682B4 15%,
+                    #1E90FF 30%,
+                    #00008B 50%,
+                    #000064 70%,
+                    #00003C 85%,
+                    #000014 100%);
+        }
+
+        /* Partículas - Bolhas FIXAS na tela */
+        .bubble {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            opacity: 0;
+            animation: bubble-rise linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes bubble-rise {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-100px) translateX(20px);
+                opacity: 0;
+            }
+        }
+
+        /* Criaturas marinhas */
+        .sea-creature {
+            position: fixed;
+            opacity: 0.1;
+            filter: blur(1px);
+            animation: creature-swim linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes creature-swim {
+            0% {
+                transform: translateX(-200px) translateY(0) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.1;
+            }
+            50% {
+                opacity: 0.15;
+            }
+            90% {
+                opacity: 0.1;
+            }
+            100% {
+                transform: translateX(calc(100vw + 200px)) translateY(100px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            padding: 2rem;
+        }
+
+        #intro-page {
+            opacity: 1;
+            transform: translateY(0);
+            min-height: 250vh;
+            padding-top: 5vh;
+        }
+
+        #community-page {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            z-index: 10;
+            min-height: 100vh;
+            justify-content: center;
+        }
+
+        #community-page.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .title {
+            font-size: 3.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            color: #e0f7ff;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-align: center;
+            animation: title-glow 4s ease-in-out infinite;
+        }
+
+        @keyframes title-glow {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(64, 164, 223, 0.3);
+            }
+            50% {
+                text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(64, 164, 223, 0.6);
+            }
+        }
+
+        .quote-container {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: rgba(0, 20, 40, 0.4);
+            border-radius: 8px;
+            border-left: 3px solid #40a4df;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: fade-in 2s ease-out;
+        }
+
+        @keyframes fade-in {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quote {
+            font-size: 1.4rem;
+            font-style: italic;
+            line-height: 1.6;
+            color: #c2e7ff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            text-align: center;
+        }
+
+        .author {
+            margin-top: 1rem;
+            text-align: right;
+            font-size: 1rem;
+            color: #88c9ff;
+        }
+
+        .depth-section {
+            width: 100%;
+            min-height: 180vh;
+            position: relative;
+            margin: 5vh 0;
+        }
+
+        .depth-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #a8e6ff;
+            z-index: 10;
+        }
+
+        .cta-button {
+            background: linear-gradient(to bottom, #006994, #004d73);
+            color: white;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            font-size: 1.3rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(0, 105, 148, 0.4);
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            margin: 10vh 0 20vh;
+            position: relative;
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 5px 15px rgba(0, 105, 148, 0.4);
+            }
+            50% {
+                box-shadow: 0 5px 25px rgba(0, 136, 204, 0.7);
+            }
+        }
+
+        .cta-button:hover {
+            background: linear-gradient(to bottom, #0088cc, #006994);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.6);
+            animation: none;
+        }
+
+        .depth-marker {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            background-color: rgba(255, 255, 255, 0.3);
+            z-index: 1;
+        }
+
+        .depth-label {
+            position: absolute;
+            left: 60%;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        /* Estilos da página de comunidade */
+        .community-container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 2rem;
+        }
+
+        .community-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .community-card {
+            background-color: rgba(0, 20, 40, 0.7);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(64, 164, 223, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .community-card:hover {
+            transform: translateY(-5px);
+            background-color: rgba(0, 30, 60, 0.7);
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            color: #66d9ff;
+            margin-bottom: 1rem;
+            text-align: center;
+            border-bottom: 2px solid #40a4df;
+            padding-bottom: 0.5rem;
+        }
+
+        .card-description {
+            font-size: 1.1rem;
+            color: #c2e7ff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .discord-widget {
+            width: 100%;
+            height: 400px;
+            border: none;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .form-link {
+            display: block;
+            background: linear-gradient(to bottom, #006994, #004d73);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .form-link:hover {
+            background: linear-gradient(to bottom, #0088cc, #006994);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 136, 204, 0.4);
+        }
+
+        .resources-list {
+            list-style-type: none;
+            margin-top: 1rem;
+        }
+
+        .resources-list li {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: rgba(0, 40, 80, 0.5);
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .resources-list li:hover {
+            background-color: rgba(0, 60, 120, 0.7);
+        }
+
+        .resources-list a {
+            color: #66d9ff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+        }
+
+        .resources-list a:hover {
+            color: #a8e6ff;
+        }
+
+        .back-button {
+            background: transparent;
+            color: #a8e6ff;
+            border: 1px solid #40a4df;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .back-button:hover {
+            background-color: rgba(64, 164, 223, 0.2);
+            color: #ffffff;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-link {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(0, 40, 80, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #66d9ff;
+            font-size: 1.5rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .social-link:hover {
+            background-color: rgba(64, 164, 223, 0.3);
+            color: #a8e6ff;
+            transform: translateY(-3px);
+        }
+
+        .next-session {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: rgba(0, 40, 80, 0.5);
+            border-radius: 5px;
+        }
+
+        .next-session h3 {
+            color: #66d9ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .next-session p {
+            color: #c2e7ff;
+            font-size: 1.1rem;
+        }
+
+        .contact-info {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background-color: rgba(0, 40, 80, 0.5);
+            border-radius: 5px;
+        }
+
+        .contact-info p {
+            color: #c2e7ff;
+            font-size: 1.1rem;
+            margin: 0.5rem 0;
+        }
+
+        /* Player de YouTube oculto */
+        #youtube-player {
+            position: fixed;
+            top: -1000px;
+            left: -1000px;
+            width: 10px;
+            height: 10px;
+            opacity: 0.01;
+            z-index: -100;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .quote {
+                font-size: 1.2rem;
+            }
+            
+            .quote-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .depth-label {
+                left: 70%;
+            }
+            
+            .community-container {
+                padding: 1rem;
+            }
+            
+            .community-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            #intro-page {
+                padding-top: 3vh;
+                min-height: 300vh;
+            }
+            
+            .depth-section {
+                min-height: 200vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ocean-container">
+        <div class="depth-layer" id="depthLayer"></div>
+        
+        <!-- Container para partículas -->
+        <div id="particles-container"></div>
+    </div>
+
+    <!-- Página de Introdução -->
+    <div class="page" id="intro-page">
+        <h1 class="title">VINTE MIL LÉGUAS SINISTRAS</h1>
+        
+        <div class="quote-container">
+            <p class="quote" id="randomQuote"></p>
+            <p class="author" id="quoteAuthor"></p>
+        </div>
+        
+        <!-- Seção de profundidade com espaçamento aumentado -->
+        <div class="depth-section">
+            <div class="depth-marker" style="top: 5%; height: 1px;"></div>
+            <div class="depth-label" style="top: 5%;">Superfície - 0m</div>
+            
+            <div class="depth-marker" style="top: 15%; height: 1px;"></div>
+            <div class="depth-label" style="top: 15%;">100 metros</div>
+            
+            <div class="depth-marker" style="top: 25%; height: 1px;"></div>
+            <div class="depth-label" style="top: 25%;">Zona de Penetração da Luz - 500m</div>
+            
+            <div class="depth-marker" style="top: 35%; height: 1px;"></div>
+            <div class="depth-label" style="top: 35%;">Zona Escura - 1000m</div>
+            
+            <div class="depth-marker" style="top: 45%; height: 1px;"></div>
+            <div class="depth-label" style="top: 45%;">Zona Abissal - 4000m</div>
+            
+            <div class="depth-marker" style="top: 55%; height: 1px;"></div>
+            <div class="depth-label" style="top: 55%;">6000m</div>
+            
+            <div class="depth-marker" style="top: 65%; height: 1px;"></div>
+            <div class="depth-label" style="top: 65%;">8000m</div>
+            
+            <div class="depth-marker" style="top: 75%; height: 1px;"></div>
+            <div class="depth-label" style="top: 75%;">Fossas Abissais - 10000m</div>
+            
+            <div class="depth-marker" style="top: 85%; height: 1px;"></div>
+            <div class="depth-label" style="top: 85%;">Fundo do Abismo</div>
+        </div>
+        
+        <!-- Botão como último elemento -->
+        <button class="cta-button" id="actionButton">Imerja no abismo</button>
+    </div>
+
+    <!-- Página de Comunidade -->
+    <div class="page" id="community-page">
+        <h1 class="title">COMUNIDADE E CONTATOS</h1>
+    
+        <div class="quote-container">
+            <p class="quote" id="randomQuote"></p>
+            <p class="author" id="quoteAuthor"></p>
+        </div>
+        
+        <div class="community-container">
+            <div class="community-grid">
+                <!-- Card do Discord -->
+                <div class="community-card">
+                    <h2 class="card-title">Comunidade Discord</h2>
+                    <p class="card-description">Junte-se à nossa comunidade no Discord para jogar, assistir e acompanhar</p>
+                    
+                    <iframe src="https://discord.com/widget?id=1333290898448187482&theme=dark" 
+                            class="discord-widget" 
+                            allowtransparency="true" 
+                            sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+                    </iframe>
+                    
+                    <a href="https://discord.gg/hGnR6uujuw" target="_blank" class="form-link">
+                        Entrar no Servidor Discord
+                    </a>
+                </div>
+                
+                <!-- Card do Formulário de Personagem -->
+                <div class="community-card">
+                    <h2 class="card-title">Criação de Personagem</h2>
+                    <p class="card-description">Preencha o formulário para criar seu personagem e enviar para o mestre.</p>
+                    <a href="https://forms.gle/zAwN2GTFgcgTKwvx7" class="form-link" id="characterFormLink">
+                        Acessar Formulário de Personagem
+                    </a>
+                    
+                    <!-- Próxima sessão -->
+                    <div class="next-session">
+                        <h3>Próximo</h3>
+                        <p>Em breve: mais recursos e funcionalidades!</p>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <h3 style="color: #66d9ff; margin-bottom: 1rem;">Onde Assistir</h3>
+                        <div class="contact-info">
+                            <p>Fique ligado para descobrir onde acompanhar as sessões do RPG!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="social-links">
+                        <a href="#" class="social-link" id="tvLink" title="Onde Assistir">📺</a>
+                    </div>
+                </div>
+                
+                <!-- Card de Créditos e Contatos -->
+                <div class="community-card">
+                    <h2 class="card-title">Créditos e Contatos</h2>
+                    <p class="card-description">Conheça os criadores e entre em contato.</p>
+                    <div style="margin-top: 1.5rem;">
+                        <h3 style="color: #66d9ff; margin-bottom: 1rem;">Créditos</h3>
+                        <ul class="resources-list">
+                            <li>
+                                <strong>Desenvolvimento:</strong><br>
+                                Manuel aka Maenoella
+                            </li>
+                            <li>
+                                <strong>Auxilio:</strong><br>
+                                Heitor de Souza e Gabriel Mascarenhas
+                            </li>
+                            <li>
+                                <strong>Músicas</strong><br>
+                                Manuel, Sleep token, Metallica entre outros em 
+                            </li>
+                            <li>
+                                <strong>Arte:</strong><br>
+                                Manuel
+                            </li>
+                            <li>
+                                <strong>Participação especial:</strong><br>
+                                Heitor de Souza
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin-top: 1.5rem;">
+                        <h3 style="color: #66d9ff; margin-bottom: 1rem;">Contato do Mestre</h3>
+                        <div class="contact-info">
+                            <p><strong>Discord:</strong> maenoella</p>
+                            <p>Entre em contato diretamente pelo Discord para dúvidas sobre o RPG</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="back-button" id="backButton">Voltar à Página Inicial</button>
+        </div>
+    </div>
+
+    <div class="depth-indicator" id="depthIndicator">Profundidade: 0m</div>
+
+    <!-- Player de YouTube oculto para o áudio -->
+    <iframe 
+        id="youtube-player"
+        src="https://www.youtube.com/embed/la_AEFO8m7U?autoplay=1&mute=0&loop=1&playlist=la_AEFO8m7U&controls=0&showinfo=0&rel=0"
+        frameborder="0" 
+        allow="autoplay; encrypted-media" 
+        allowfullscreen>
+    </iframe>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const depthLayer = document.getElementById('depthLayer');
+            const depthIndicator = document.getElementById('depthIndicator');
+            const randomQuote = document.getElementById('randomQuote');
+            const quoteAuthor = document.getElementById('quoteAuthor');
+            const actionButton = document.getElementById('actionButton');
+            const particlesContainer = document.getElementById('particles-container');
+            const youtubePlayer = document.getElementById('youtube-player');
+            const introPage = document.getElementById('intro-page');
+            const communityPage = document.getElementById('community-page');
+            const backButton = document.getElementById('backButton');
+            const characterFormLink = document.getElementById('characterFormLink');
+            const tvLink = document.getElementById('tvLink');
+            
+            // Lista de frases especiais
+            const quotes = [
+                {
+                    text: "O mar é tudo. Cobre sete décimos do globo terrestre … Seu sopro é puro e saudável. É um deserto imenso, onde o homem nunca está sozinho, pois sente a vida agitar-se por todos os lados.",
+                    author: "Jules Verne"
+                },
+                {
+                    text: "O mar é apenas a personificação de uma existência sobrenatural e maravilhosa. Não é nada além de amor e emoção; é o 'Infinito Vivo'.",
+                    author: "Jules Verne"
+                },
+                {
+                    text: "Nas profundezas do oceano, a escuridão não é a ausência de luz, mas a presença de algo mais antigo.",
+                    author: "H.P. Lovecraft"
+                },
+                {
+                    text: "Desde o nascimento, o homem carrega o peso da gravidade nos ombros. Ele está preso à terra. Mas o homem só precisa afundar sob a superfície e então é livre.",
+                    author: "Jacques-Yves Cousteau"
+                },
+                {
+                    text: "Quanto mais fundo descemos, mais estranhos nos tornamos para nós mesmos.",
+                    author: "William Beebe"
+                },
+                {
+                    text: "O oceano é um lugar de silêncio que fala mais alto que qualquer barulho.",
+                    author: "Jacques Cousteau"
+                },
+                {
+                    text: "Há monstros no mar, é verdade, mas os piores estão dentro de nós.",
+                    author: "Patrick Ness"
+                },
+                {
+                    text: "Deus ao mar o perigo e o abismo deu, mas nele é que espelhou o céu.",
+                    author: "Fernando Pessoa"
+                },
+                {
+                    text: "O abismo não olha apenas para você - ele te convida para dentro.",
+                    author: "Friedrich Nietzsche"
+                }
+            ];
+            
+            // Seleciona uma frase aleatória
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            randomQuote.textContent = quotes[randomIndex].text;
+            quoteAuthor.textContent = "- " + quotes[randomIndex].author;
+            
+            // Mapeamento de profundidade para indicador
+            const depthMap = [
+                { scroll: 0, depth: 0, label: "Superfície" },
+                { scroll: 5, depth: 100, label: "" },
+                { scroll: 15, depth: 500, label: "Zona de Penetração da Luz" },
+                { scroll: 25, depth: 1000, label: "Zona Escura" },
+                { scroll: 35, depth: 4000, label: "Zona Abissal" },
+                { scroll: 45, depth: 6000, label: "" },
+                { scroll: 55, depth: 8000, label: "" },
+                { scroll: 65, depth: 10000, label: "Fossas Abissais" },
+                { scroll: 75, depth: 11000, label: "Fundo do Abismo" }
+            ];
+            
+            // Função para criar bolhas FIXAS na tela
+            function createBubble() {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                
+                // Tamanho aleatório
+                const size = Math.random() * 30 + 10;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                
+                // Posição horizontal aleatória
+                bubble.style.left = `${Math.random() * 100}%`;
+                
+                // Duração da animação
+                const duration = Math.random() * 20 + 10;
+                bubble.style.animationDuration = `${duration}s`;
+                
+                // Atraso aleatório
+                bubble.style.animationDelay = `${Math.random() * 5}s`;
+                
+                particlesContainer.appendChild(bubble);
+                
+                // Remover bolha após a animação
+                setTimeout(() => {
+                    if (bubble.parentNode) {
+                        bubble.parentNode.removeChild(bubble);
+                    }
+                }, duration * 1000);
+            }
+            
+            // Função para criar criaturas marinhas
+            function createSeaCreature() {
+                const creature = document.createElement('div');
+                creature.classList.add('sea-creature');
+                
+                // Tipos de criatura
+                const creatures = ['🐙', '🐠', '🐟', '🐋', '🦑', '🦈'];
+                const randomCreature = creatures[Math.floor(Math.random() * creatures.length)];
+                creature.textContent = randomCreature;
+                creature.style.fontSize = `${Math.random() * 40 + 20}px`;
+                
+                // Posição vertical aleatória
+                creature.style.top = `${Math.random() * 80 + 10}%`;
+                
+                // Duração da animação
+                const duration = Math.random() * 40 + 30;
+                creature.style.animationDuration = `${duration}s`;
+                
+                particlesContainer.appendChild(creature);
+                
+                // Remover criatura após a animação
+                setTimeout(() => {
+                    if (creature.parentNode) {
+                        creature.parentNode.removeChild(creature);
+                    }
+                }, duration * 1000);
+            }
+            
+            // Iniciar sistema de partículas
+            function startParticles() {
+                // Criar bolhas regularmente
+                setInterval(createBubble, 500);
+                
+                // Criar criaturas menos frequentemente
+                setInterval(createSeaCreature, 3000);
+            }
+            
+            // Configurar o player do YouTube para tocar automaticamente
+            function setupYouTubeAudio() {
+                // O iframe já está configurado para autoplay
+                console.log("Áudio do YouTube configurado para tocar automaticamente");
+            }
+            
+            // Navegação entre páginas
+            actionButton.addEventListener('click', function() {
+                introPage.style.opacity = '0';
+                introPage.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    introPage.style.display = 'none';
+                    communityPage.classList.add('active');
+                }, 800);
+            });
+            
+            backButton.addEventListener('click', function() {
+                communityPage.classList.remove('active');
+                setTimeout(() => {
+                    introPage.style.display = 'flex';
+                    introPage.style.opacity = '1';
+                    introPage.style.transform = 'translateY(0)';
+                }, 100);
+            });
+            
+            // Link da TV (Onde Assistir)
+            tvLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('Aguarde mais informações para descobrir onde assistir às sessões do RPG!');
+            });
+            
+            window.addEventListener('scroll', function() {
+                const scrollPosition = window.scrollY;
+                const maxScroll = document.body.scrollHeight - window.innerHeight;
+                const scrollPercentage = maxScroll > 0 ? (scrollPosition / maxScroll) * 100 : 0;
+                
+                // Atualiza o indicador de profundidade
+                let currentDepth = 0;
+                let currentLabel = "Superfície";
+                
+                for (let i = depthMap.length - 1; i >= 0; i--) {
+                    if (scrollPercentage >= depthMap[i].scroll) {
+                        currentDepth = depthMap[i].depth;
+                        currentLabel = depthMap[i].label;
+                        break;
+                    }
+                }
+                
+                depthIndicator.textContent = `Profundidade: ${currentDepth}m${currentLabel ? ' - ' + currentLabel : ''}`;
+                
+                // Ajusta o escurecimento do fundo conforme a rolagem
+                const brightness = 100 - (scrollPercentage * 0.7);
+                const contrast = 100 + (scrollPercentage * 0.3);
+                
+                depthLayer.style.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+            });
+            
+            // Iniciar partículas e áudio
+            startParticles();
+            setupYouTubeAudio();
+        });
+    </script>
+</body>
+</html>
